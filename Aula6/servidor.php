@@ -17,7 +17,7 @@
             $array = array();
             while($linha = mysqli_fetch_assoc($result)){
                 $array[] = $linha;
-            };
+            }
             echo '{"produtos" : '.json_encode($array) . ' } ';
         }
 
@@ -26,7 +26,8 @@
             $nome = $_GET["nome"];
             $preco = $_GET["preco"];
             $sql = "INSERT INTO produto (nome, preco) 
-                    VALUES('$nome', $preco)";
+                    VALUES ('$nome', $preco ) ";
+          
             mysqli_query($conn, $sql);
             $result = mysqli_insert_id($conn);
             if($result > 0){
