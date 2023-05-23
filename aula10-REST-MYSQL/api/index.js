@@ -2,7 +2,7 @@ const restify = require("restify")
 const errors = require("restify-errors")
 
 const servidor = restify.createServer({
-    name : 'loja',
+    name : 'loja_dsapi',
     version : '1.0.0'
 });
 
@@ -20,23 +20,65 @@ var knex = require('knex')({
         host : 'localhost',
         user : 'root',
         password : '',
-        database : 'loja'
+        database : 'loja_dsapi'
     }
 });
 
 servidor.get('/', (req, res, next) => {
-    res.send('Bem-Vindo(a) à API Loja!')
+    res.send('Bem-Vindo(a) à API loja_dsapi!')
 });
 
-servidor.get('/produtos', (req, res, next) => {
-    knex('produto').then((dados) => {
+servidor.get('/clientes', (req, res, next) => {
+    knex('clientes').then((dados) => {
         res.send(dados)
     }, next);
 });
 
-servidor.get('/produtos/:idProd', (req, res, next) => {
+servidor.get('/clientes/:idCliente', (req, res, next) => {
+    const idCliente = req.params.idCliente;
+    knex('clientes')
+        .where('id', idCliente)
+        .first()
+        .then((dados) => {
+            if(!dados){
+                return res.send(new errors.BadRequestError('Cliente não encontrado'))
+            }
+            res.send(dados)
+        }, next);
+});
+
+servidor.post('/clientes', (req, res, next) => {
+    knex('clientes')
+        .insert(req.body)
+        .then((dados) => {
+            res.send(dados)
+        }, next);
+});
+
+servidor.put('/clientes/:idCliente', (req, res, next) => {
     const idProduto = req.params.idProd;
-    knex('produto')
+    knex('clientes')
+        .where('id', idCliente)
+        .update(req.body)
+        .then((dados) => {
+            if(!dados){
+                return res.send(new errors.BadRequestError('Cliente não encontrado'))
+            }
+            res.send('Cliente atualizado.')
+        }, next);
+});
+
+/* produtos */ 
+
+servidor.get('/produtos', (req, res, next) => {
+    knex('produtos').then((dados) => {
+        res.send(dados)
+    }, next);
+});
+
+servidor.get('/produtos/:idProduto', (req, res, next) => {
+    const idProduto = req.params.idProduto;
+    knex('produtos')
         .where('id', idProduto)
         .first()
         .then((dados) => {
@@ -47,17 +89,52 @@ servidor.get('/produtos/:idProd', (req, res, next) => {
         }, next);
 });
 
-servidor.post('/produtos', (req, res, next) => {
-    knex('produto')
+/* Pedido */
+
+servidor.get('/pedidos', (req, res, next) => {
+    knex('pedidos').then((dados) => {
+        res.send(dados)
+    }, next);
+});
+
+servidor.get('/pedidos/:idPedido', (req, res, next) => {
+    const idPedido = req.params.idPedido;
+    knex('pedidos')
+        .where('id', idPedido)
+        .first()
+        .then((dados) => {
+            if(!dados){
+                return res.send(new errors.BadRequestError('Pedido não encontrado'))
+            }
+            res.send(dados)
+        }, next);
+});
+
+
+
+servidor.post('/adicionar', (req, res, next) => {
+    knex('pedidos_produtos')
+        .insert(req.body)
+        .then((dados) => {
+            res.send(dados);
+        }, next);
+});
+
+
+
+/* Admin */
+
+servidor.post('/admin/produtos', (req, res, next) => {
+    knex('produtos')
         .insert(req.body)
         .then((dados) => {
             res.send(dados)
         }, next);
 });
 
-servidor.put('/produtos/:idProd', (req, res, next) => {
-    const idProduto = req.params.idProd;
-    knex('produto')
+servidor.put('/admin/produtos/:idProduto', (req, res, next) => {
+    const idProduto = req.params.idProduto;
+    knex('produtos')
         .where('id', idProduto)
         .update(req.body)
         .then((dados) => {
@@ -68,9 +145,10 @@ servidor.put('/produtos/:idProd', (req, res, next) => {
         }, next);
 });
 
-servidor.del('/produtos/:idProd', (req, res, next) => {
-    const idProduto = req.params.idProd;
-    knex('produto')
+
+servidor.del('/admin/produtos/:idProduto', (req, res, next) => {
+    const idProduto = req.params.idProduto;
+    knex('produtos')
         .where('id', idProduto)
         .delete()
         .then((dados) => {
@@ -78,5 +156,18 @@ servidor.del('/produtos/:idProd', (req, res, next) => {
                 return res.send(new errors.BadRequestError('Produto não encontrado'))
             }
             res.send('Produto deletado.')
+        }, next);
+});
+
+servidor.del('/admin/pedidos/:idPedido', (req, res, next) => {
+    const idPedido = req.params.idPedido;
+    knex('pedidoss')
+        .where('id', idProduto)
+        .delete()
+        .then((dados) => {
+            if(!dados){
+                return res.send(new errors.BadRequestError('Pedido não encontrado'))
+            }
+            res.send('Pedido deletado.')
         }, next);
 });
